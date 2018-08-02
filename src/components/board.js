@@ -22,10 +22,8 @@ console.log(Properties)
   }
 
   startGame(){
-    console.log(this.props.monopolyContract, this.props.currentGame.gameId, this.props.account)
     this.props.monopolyContract.startGame(this.props.currentGameId, {from: this.props.account})
     .then(res => {
-      console.log(res)
       this.setState({gameState: 'Playing'})
     })
     .catch(err => {
