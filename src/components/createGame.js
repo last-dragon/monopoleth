@@ -6,6 +6,7 @@ class CreateGame extends Component {
     this.state = {
       creatingGame: false,
       name: 'enter a name',
+      game: 'gameId',
       numberOfPlayers: 2
     }
   }
@@ -23,6 +24,11 @@ class CreateGame extends Component {
     this.props.createGame(this.state.numberOfPlayers, this.state.name)
   }
 
+  handleGameIdSearch(e){
+    e.preventDefault()
+    this.props.findGame(this.state.game)
+  }
+
   handleSelectChange(e){
     this.setState({numberOfPlayers: e.target.value})
   }
@@ -31,7 +37,17 @@ class CreateGame extends Component {
     this.setState({name: e.target.value})
   }
 
+  handleGameChange(e){
+    this.setState({game: e.target.value})
+  }
+
   render() {
+
+    let playerGames;
+
+    if (this.props.playerGames) {
+      playerGames = this.props.playerGames.map(game => <div><button> {game.name}({game.gameId})</button></div>)
+    }
 
     if (this.state.creatingGame) {
       return(      
@@ -56,6 +72,19 @@ class CreateGame extends Component {
       return(
       <div className="CreateGame"> 
         <button onClick={this.createGameForm.bind(this)}>Create Game!</button>
+        
+        <div> or  </div>
+        
+        <button onClick={this.props.findGames.bind(this)}>Find previous games!</button>
+        {playerGames}
+        <div> or  </div>
+
+        <form onSubmit={this.handleGameIdSearch.bind(this)}>
+          <label>Join specific game from invite:<input type="text" name="game" onChange={this.handleGameChange.bind(this)} /></label>
+
+          <input type="submit" value="Submit" /> 
+
+        </form>
       </div>
       )
     }

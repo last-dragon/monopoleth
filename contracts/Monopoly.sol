@@ -10,22 +10,26 @@ contract Monopoly {
     uint balance;
     uint index;
     uint boardIndex;
-    uint[] propertiesIndex;
   }
 
   struct Game{
     GameState gameState;
-    address currentPlayer;
+    string name;
+    uint currentPlayer;
     uint houseIndex;
     uint hotelIndex;
     address owner;
+    bytes32 gameId;
     address[] playerIndex;
-    uint[] playingOrder;
     mapping(address => Player) players;
   }
 
   uint constant maxPlayers = 8;
   uint constant minPlayers = 2;
+  
+  uint256 public totalSupply;
+  mapping(address => uint256) balanceOf;
+  
   mapping(bytes32 => Game) public games;
   mapping(address => bytes32[]) playerGames;
   
@@ -36,16 +40,17 @@ contract Monopoly {
   constructor () {
   }
   
-  function createGame(uint8 numPlayers, string _name) public payable returns(bytes32) {
-    bytes32 gameId = sha3(msg.sender, block.number);
+  function createGame(uint8 numPlayers, uint8 randomNumber, string _name) public payable returns(bytes32) {
+    bytes32 gameId = keccak256(msg.sender, block.number);
     games[gameId] = Game(
         GameState.Created,
-        0, // placeholder until game starts
+        _name,
+        randomNumber, 
         0, // 0 houses used so far
         0, // 0 hotels used so far
         msg.sender,
-        new address[](0),
-        new uint[](0)
+        gameId,
+        new address[](0)
     );
     registerPlayer(gameId, msg.sender, _name);
     
@@ -53,55 +58,62 @@ contract Monopoly {
     return gameId;
   }
   
-  function getGame(bytes32 gameId) public returns(GameState, address, uint, uint, address[], address){
+  function takeTurn(uint num, bytes32 gameId) public{
+    games[gameId].currentPlayer += 1;
+    games[gameId].playerIndex[games[gameId].currentPlayer];
+  }
+  
+  function getPlayerGames(address _address) public view returns(bytes32[]){
+      bytes32[] _playerGames = playerGames[_address];
+      bytes32[] memory v = new bytes32[](_playerGames.length);
+      for(uint i = 0; i < v.length; i++){
+        v[i] = _playerGames[i];
+      }
+      return v;
+  }
+
+  function getGame(bytes32 gameId) public view returns(GameState, string, uint, uint, uint, address, bytes32, address[]){
     Game memory g = games[gameId];
     
-    return (g.gameState, g.currentPlayer, g.houseIndex, g.hotelIndex, g.playerIndex, g.owner);
+    return (g.gameState, g.name, g.currentPlayer, g.houseIndex, g.hotelIndex, g.owner, g.gameId, g.playerIndex);
+  }
+  
+  function getPlayer(bytes32 gameId, address playerId) public view returns(string, uint, uint, uint){
+      Player memory p = games[gameId].players[playerId];
+      return (p.name, p.balance, p.index, p.boardIndex);
   }
   
   function registerPlayer(bytes32 gameId, address _address, string _name) private{
+      totalSupply += 1500;
+      games[gameId].playerIndex.push(msg.sender);
+      playerGames[_address].push(gameId);
+      
       games[gameId].players[msg.sender] = Player(
         msg.sender,
         _name,
         1500,
         games[gameId].playerIndex.length,
-        0,
-        new uint[](0)
+        0
     );
-    games[gameId].playerIndex.push(msg.sender);
-    playerGames[_address].push(gameId);
   }
   
-  function joinGame(bytes32 gameId, string _name) public{
-      require(games[gameId].gameState == GameState.Created); 
-      require(games[gameId].playerIndex.length < maxPlayers); //check if max players reached
-      require(games[gameId].playerIndex[games[gameId].players[msg.sender].index] == msg.sender); // check if player already joined
+  function joinGame(bytes32 gameId, string _name) public payable{
+    //   require(games[gameId].gameState == GameState.Created); 
+    //   require(games[gameId].playerIndex.length < maxPlayers); //check if max players reached
+    //   require(games[gameId].playerIndex[games[gameId].players[msg.sender].index] == msg.sender); // check if player already joined
       registerPlayer(gameId, msg.sender, _name);
   }
   
-  function startGame(bytes32 gameId, uint[] _playingOrder) public{
+  function startGame(bytes32 gameId) public{
       require(games[gameId].owner == msg.sender);
       require(games[gameId].gameState == GameState.Created);
       
-      //randomize order of players
       
       //randomize order of chance/community
       
-      //pay players tokens
-      games[gameId].playingOrder = _playingOrder;
       games[gameId].gameState = GameState.Playing;
   }
   
-  function getPlayingOrder(bytes32 gameId) public{
-      //pick random number to begin
-      //uint number = fill_in_the_blank()
-      //games[gameId].currentPlayer = number
-  }
-  
-  function takeTurn(bytes32 gameId) public{
-      //two random numbers 1-6;
-      //go to position on board
-      //take proper action
-  }
   
 }
+
