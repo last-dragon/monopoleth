@@ -5,7 +5,7 @@ import Properties from '../rules/properties'
 class Board extends Component {
   constructor(props) {
     super(props)
-console.log(Properties)
+
     this.properties = Properties.properties
 
     this.state = {
@@ -14,11 +14,24 @@ console.log(Properties)
       locations: [],
       gameId: '',
       currentPlayer: '',
+      currentPlayerName: '',
       diceAreRolled: false,
       die1: '-',
       die2: '-',
       turn: 0,
     }
+  }
+
+  joinGame(e){
+    e.preventDefault()
+    console.log(this.props.currentGame.gameId, this.state.currentPlayerName)
+    this.props.monopolyContract.joinGame(this.props.currentGame.gameId, this.state.currentPlayerName, {from: this.props.account})
+    .then(result => {
+      console.log(result)
+    })
+    .catch(err => {
+      console.log(err)
+    })
   }
 
   startGame(){
@@ -86,6 +99,14 @@ console.log(Properties)
     console.log(localStorage)
   }
 
+  isOwner(){
+    return this.state.account === this.props.currentGame.owner
+  }
+
+  handleNameChange(e){
+    this.setState({currentPlayerName: e.target.value})
+  }
+
   setStorageState(){
     localStorage.setItem('state', JSON.stringify(this.state))
   }
@@ -111,7 +132,16 @@ console.log(Properties)
             <h2>{name}</h2>
             <h4>{gameId}</h4>
             <h4>{numPlayers}</h4>
-            <button onClick={this.startGame.bind(this)}>Start Game</button>
+            {this.isOwner() ? (
+              <button onClick={this.startGame.bind(this)}>Start Game</button> 
+              ) : (
+              <form onSubmit={this.joinGame.bind(this)}>   
+                <label>Name:<input type="text" name="name" onChange={this.handleNameChange.bind(this)} /></label>
+                <input type="submit" value="Submit" /> 
+              </form>
+              )
+            }
+            
           </div>
         )}
       </div>

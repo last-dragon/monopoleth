@@ -98,9 +98,9 @@ contract Monopoly {
   }
   
   function joinGame(bytes32 gameId, string _name) public payable{
-    //   require(games[gameId].gameState == GameState.Created); 
-    //   require(games[gameId].playerIndex.length < maxPlayers); //check if max players reached
-    //   require(games[gameId].playerIndex[games[gameId].players[msg.sender].index] == msg.sender); // check if player already joined
+      require(games[gameId].gameState == GameState.Created); 
+      require(games[gameId].playerIndex.length < maxPlayers); //check if max players reached
+      // check if player already joined
       registerPlayer(gameId, msg.sender, _name);
   }
   
