@@ -41,12 +41,16 @@ class CreateGame extends Component {
     this.setState({game: e.target.value})
   }
 
+  handleGameSelect(gameId){
+    this.props.findGame(gameId)
+  }
+
   render() {
 
     let playerGames;
 
     if (this.props.playerGames) {
-      playerGames = this.props.playerGames.map(game => <div><button> {game.name}({game.gameId})</button></div>)
+      playerGames = this.props.playerGames.map(game => <div><button onClick={() => this.handleGameSelect(game.gameId)}> {game.name}({game.gameId})</button></div>)
     }
 
     if (this.state.creatingGame) {

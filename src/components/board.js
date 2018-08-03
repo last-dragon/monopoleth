@@ -24,9 +24,9 @@ class Board extends Component {
 
   joinGame(e){
     e.preventDefault()
-    console.log(this.props.currentGame.gameId, this.state.currentPlayerName)
     this.props.monopolyContract.joinGame(this.props.currentGame.gameId, this.state.currentPlayerName, {from: this.props.account})
     .then(result => {
+      this.getPlayers()
       console.log(result)
     })
     .catch(err => {
@@ -51,7 +51,7 @@ class Board extends Component {
       let roll = this.state.die1 + this.state.die2;
       console.log(this.properties[roll])
 
-      //here is the logic to handle what to do 
+      //to do: handle turn logic
 
       if (this.state.die1 === this.state.die2){
         console.log('snake eyes')
@@ -82,8 +82,18 @@ class Board extends Component {
     })
   };
 
+  getPlayers(){
+    this.props.monopolyContract.getPlayers(this.props.currentGameId, {from: this.props.account})
+    .then(result => {
+      console.log(result)
+      this.setState({players: result})
+    })
+  }
+
   componentDidMount() {
     console.log(this.props)
+
+    this.getPlayers()
 
     // var localState = localStorage.getItem('state');
 
@@ -96,11 +106,11 @@ class Board extends Component {
 
   componentDidUpdate(){
     this.setStorageState()
-    console.log(localStorage)
+    // console.log(localStorage)
   }
 
   isOwner(){
-    return this.state.account === this.props.currentGame.owner
+    return this.props.account === this.props.currentGame.owner
   }
 
   handleNameChange(e){
@@ -113,8 +123,17 @@ class Board extends Component {
 
   render() {
     let gameState = this.props.currentGame.gameState
-    console.log(gameState, gameState === "1")
     let {name, gameId, numPlayers} = this.props.currentGame
+
+    let playerPage = this.state.players.includes(this.state.account) ? (
+        <form onSubmit={this.joinGame.bind(this)}>   
+          <label>Name:<input type="text" name="name" onChange={this.handleNameChange.bind(this)} /></label>
+          <input type="submit" value="Submit" /> 
+        </form>
+      ) : (
+        this.state.players.map( playerId => <div>{playerId}</div>)
+      );
+
     return (
       <div className="Board">
         { gameState === "1" ? (
@@ -131,16 +150,14 @@ class Board extends Component {
           <div>
             <h2>{name}</h2>
             <h4>{gameId}</h4>
-            <h4>{numPlayers}</h4>
+            <h4>Banker: {this.props.currentGame.owner}</h4>
             {this.isOwner() ? (
               <button onClick={this.startGame.bind(this)}>Start Game</button> 
               ) : (
-              <form onSubmit={this.joinGame.bind(this)}>   
-                <label>Name:<input type="text" name="name" onChange={this.handleNameChange.bind(this)} /></label>
-                <input type="submit" value="Submit" /> 
-              </form>
+               <div>Waiting for banker to start game..</div>
               )
             }
+            { <div> <div><h4>Players:</h4></div>{playerPage} </div>}
             
           </div>
         )}

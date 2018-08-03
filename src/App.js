@@ -10,6 +10,11 @@ import './css/open-sans.css'
 import './css/pure-min.css'
 import './App.css'
 
+//events TO DO
+  //player join game (update state and UI)
+  //game start
+
+
 class App extends Component {
   constructor(props) {
     super(props)
@@ -23,6 +28,7 @@ class App extends Component {
       account: null,
       currentGame: false,
       currentGameId: false,
+      currentGameOwner: false,
       playerGames: [],
       randomNumber: 0
     }
@@ -66,8 +72,7 @@ class App extends Component {
     .then(result => {
       var game = this.buildGame(result)
       console.log(result, game)
-      this.setState({currentGame: game, currentGameId: game.gameId})
-      console.log(game)
+      this.setState({currentGame: game, currentGameId: game.gameId, currentGameOwner: game.owner})
     })
   }
 
@@ -91,6 +96,16 @@ class App extends Component {
     // Get network provider and web3 instance.
     // See utils/getWeb3 for more info.
 
+
+  }
+
+  componentDidMount(){
+    //listen for events here
+    // this.state.monopolyContract.
+    if (this.state.account) {
+
+    }
+
     getWeb3
     .then(results => {
       this.setState({
@@ -103,14 +118,6 @@ class App extends Component {
     .catch(() => {
       console.log('Error finding web3.')
     })
-  }
-
-  componentDidMount(){
-    //listen for events here
-    // this.state.monopolyContract.
-    if (this.state.account) {
-
-    }
   }
 
   instantiateContract() {
@@ -126,17 +133,30 @@ class App extends Component {
       monopoly.deployed().then(instance => {
         monopolyInstance = instance
         this.monopolyInstance = instance
-        console.log(accounts)
-        return this.setState({monopolyContract: monopolyInstance, account: accounts[0]})
+        return this.setState({monopolyContract: monopolyInstance, account: accounts[0]}, this.instantiateContractListeners)
       })
     })
 
     setInterval(() => {
       if (this.state.web3.eth.accounts[0] !== this.state.account) {
         console.log('account change')
-        this.state.account = this.state.web3.eth.accounts[0];
+        this.setState({account: this.state.web3.eth.accounts[0]});
       }
     }, 100);
+  }
+
+  instantiateContractListeners(){
+    //TODO: what to do with events. "Recent Events List?"
+
+    let gameJoined = this.state.monopolyContract.PlayerJoined();
+    let gameStarted = this.state.monopolyContract.PlayerJoined();
+
+    gameJoined.watch( (error, result) => {
+      if (!error) {
+        console.log(result)
+        //result.args.player, result.args.gameId
+      }
+    })
   }
 
   render() {

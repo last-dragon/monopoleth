@@ -35,7 +35,7 @@ contract Monopoly {
   
   event GameInitialized(bytes32 gameId, uint pot);
   event PlayerJoined(bytes32 gameId, address player);
-  event BoardBuilt();
+  event GameStarted(bytes32 gameId);
   
   constructor () {
   }
@@ -56,6 +56,15 @@ contract Monopoly {
     
     emit GameInitialized(gameId, msg.value);
     return gameId;
+  }
+  
+  function getPlayers(bytes32 gameId) public view returns(address[]){
+    address[] players = games[gameId].playerIndex;
+    address[] memory p = new address[](players.length);
+    for(uint i=0; i < p.length; i++){
+        p[i] = players[i];
+    }
+    return p;
   }
   
   function takeTurn(uint num, bytes32 gameId) public{
@@ -95,6 +104,7 @@ contract Monopoly {
         games[gameId].playerIndex.length,
         0
     );
+    PlayerJoined(gameId, _address);
   }
   
   function joinGame(bytes32 gameId, string _name) public payable{
@@ -112,6 +122,7 @@ contract Monopoly {
       //randomize order of chance/community
       
       games[gameId].gameState = GameState.Playing;
+      GameStarted(gameId);
   }
   
   
